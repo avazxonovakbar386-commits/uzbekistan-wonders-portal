@@ -11,6 +11,7 @@ import Tours from "./pages/Tours";
 import TravelInfo from "./pages/TravelInfo";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           </Route>
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
+          <Route path="/payment" element={<Payment />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
