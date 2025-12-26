@@ -1,3 +1,6 @@
+// Main App Component with React Router v6 routing
+// Dynamic payment route: /payment/:id
+// Invalid tour IDs redirect to home (no 404 shown for tour routes)
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +26,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Main Layout Routes */}
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/destinations" element={<Destinations />} />
@@ -31,9 +35,12 @@ const App = () => (
             <Route path="/travel-info" element={<TravelInfo />} />
             <Route path="/contact" element={<Contact />} />
           </Route>
+          {/* Auth Routes (no layout) */}
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
-          <Route path="/payment" element={<Payment />} />
+          {/* Dynamic Payment Route - reads tour ID from URL */}
+          <Route path="/payment/:id" element={<Payment />} />
+          {/* 404 - Must be last route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

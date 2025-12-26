@@ -1,5 +1,7 @@
+// Tours Page - Complete tour listing with filters and search
+// Uses centralized tour data and navigates to dynamic payment routes
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Clock, Users, Star, MapPin, Filter, Grid, List, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -15,141 +17,21 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { tours } from "@/data/tours";
 
-const allTours = [
-  {
-    id: 1,
-    title: "Classic Silk Road Journey",
-    description: "Experience the best of Uzbekistan's ancient cities in this comprehensive 8-day tour covering all major highlights.",
-    duration: "8 days",
-    durationDays: 8,
-    groupSize: "2-12",
-    price: 1299,
-    rating: 4.9,
-    reviews: 156,
-    category: "Cultural",
-    destinations: ["Tashkent", "Samarkand", "Bukhara", "Khiva"],
-    featured: true,
-    difficulty: "Easy",
-    included: ["Accommodation", "Transport", "Guide", "Meals"],
-  },
-  {
-    id: 2,
-    title: "Samarkand Explorer",
-    description: "Deep dive into the jewel of the Silk Road with expert local guides. Perfect for history enthusiasts.",
-    duration: "4 days",
-    durationDays: 4,
-    groupSize: "2-8",
-    price: 599,
-    rating: 4.8,
-    reviews: 89,
-    category: "Historical",
-    destinations: ["Samarkand"],
-    featured: false,
-    difficulty: "Easy",
-    included: ["Accommodation", "Transport", "Guide"],
-  },
-  {
-    id: 3,
-    title: "Uzbek Gastronomy Tour",
-    description: "Discover Uzbekistan through its delicious cuisine. Cooking classes, market visits, and local home meals.",
-    duration: "6 days",
-    durationDays: 6,
-    groupSize: "4-10",
-    price: 899,
-    rating: 4.9,
-    reviews: 67,
-    category: "Gastronomy",
-    destinations: ["Tashkent", "Samarkand", "Bukhara"],
-    featured: true,
-    difficulty: "Easy",
-    included: ["Accommodation", "Transport", "Guide", "Meals", "Cooking Classes"],
-  },
-  {
-    id: 4,
-    title: "Desert Adventure",
-    description: "Camp under the stars in the Kyzylkum Desert with camel trekking and traditional yurt stays.",
-    duration: "5 days",
-    durationDays: 5,
-    groupSize: "2-6",
-    price: 799,
-    rating: 4.7,
-    reviews: 45,
-    category: "Adventure",
-    destinations: ["Bukhara", "Nurata"],
-    featured: false,
-    difficulty: "Moderate",
-    included: ["Accommodation", "Transport", "Guide", "Meals", "Camping Gear"],
-  },
-  {
-    id: 5,
-    title: "Photography Expedition",
-    description: "Capture the beauty of Uzbekistan with a professional photographer guide. Best angles guaranteed.",
-    duration: "10 days",
-    durationDays: 10,
-    groupSize: "4-8",
-    price: 1899,
-    rating: 5.0,
-    reviews: 23,
-    category: "Cultural",
-    destinations: ["Tashkent", "Samarkand", "Bukhara", "Khiva"],
-    featured: true,
-    difficulty: "Easy",
-    included: ["Accommodation", "Transport", "Guide", "Photo Workshops"],
-  },
-  {
-    id: 6,
-    title: "Fergana Valley Discovery",
-    description: "Explore silk workshops, ceramic masters, and the lush landscapes of the famous Fergana Valley.",
-    duration: "4 days",
-    durationDays: 4,
-    groupSize: "2-8",
-    price: 549,
-    rating: 4.6,
-    reviews: 34,
-    category: "Cultural",
-    destinations: ["Fergana", "Margilan", "Rishtan"],
-    featured: false,
-    difficulty: "Easy",
-    included: ["Accommodation", "Transport", "Guide", "Workshop Access"],
-  },
-  {
-    id: 7,
-    title: "Bukhara Heritage Walk",
-    description: "Immerse yourself in the living museum of Bukhara. Explore 140+ monuments with expert historians.",
-    duration: "3 days",
-    durationDays: 3,
-    groupSize: "2-10",
-    price: 449,
-    rating: 4.8,
-    reviews: 78,
-    category: "Historical",
-    destinations: ["Bukhara"],
-    featured: false,
-    difficulty: "Easy",
-    included: ["Accommodation", "Guide", "Entry Tickets"],
-  },
-  {
-    id: 8,
-    title: "Khiva Time Travel",
-    description: "Step back in time within the perfectly preserved walls of Itchan Kala. A UNESCO World Heritage experience.",
-    duration: "2 days",
-    durationDays: 2,
-    groupSize: "2-12",
-    price: 299,
-    rating: 4.9,
-    reviews: 112,
-    category: "Historical",
-    destinations: ["Khiva"],
-    featured: false,
-    difficulty: "Easy",
-    included: ["Accommodation", "Guide", "Entry Tickets"],
-  },
-];
+// Extended tour data for tours page with additional fields
+const allTours = tours.map((tour) => ({
+  ...tour,
+  durationDays: parseInt(tour.duration),
+  destinations: tour.locations,
+  difficulty: "Easy",
+  included: ["Accommodation", "Transport", "Guide"],
+}));
 
 const categories = ["Cultural", "Historical", "Adventure", "Gastronomy"];
 
 const Tours = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -161,6 +43,7 @@ const Tours = () => {
 
   const destinationParam = searchParams.get("destination");
 
+  // Filter and sort tours based on user selections
   const filteredTours = allTours
     .filter((tour) => {
       const matchesSearch =
@@ -184,8 +67,13 @@ const Tours = () => {
       if (sortBy === "price-high") return b.price - a.price;
       if (sortBy === "rating") return b.rating - a.rating;
       if (sortBy === "duration") return a.durationDays - b.durationDays;
-      return b.reviews - a.reviews; // popular
+      return b.reviews - a.reviews;
     });
+
+  // Navigate to dynamic payment page
+  const handleViewDetails = (tourId: number) => {
+    navigate(`/payment/${tourId}`);
+  };
 
   return (
     <div className="min-h-screen pt-20">
@@ -375,84 +263,84 @@ const Tours = () => {
                 )}
               >
                 {filteredTours.map((tour) => (
-                  <Link key={tour.id} to={`/tours/${tour.id}`} className="group">
-                    <Card
-                      hover
+                  <Card
+                    key={tour.id}
+                    hover
+                    className={cn(
+                      "overflow-hidden h-full group cursor-pointer",
+                      viewMode === "list" && "flex flex-col md:flex-row"
+                    )}
+                    onClick={() => handleViewDetails(tour.id)}
+                  >
+                    {/* Image */}
+                    <div
                       className={cn(
-                        "overflow-hidden h-full",
-                        viewMode === "list" && "flex flex-col md:flex-row"
+                        "relative bg-gradient-to-br from-primary/20 to-accent/20 overflow-hidden",
+                        viewMode === "grid" ? "h-48" : "h-48 md:h-auto md:w-64 shrink-0"
                       )}
                     >
-                      {/* Image */}
-                      <div
-                        className={cn(
-                          "relative bg-gradient-to-br from-primary/20 to-accent/20 overflow-hidden",
-                          viewMode === "grid" ? "h-48" : "h-48 md:h-auto md:w-64 shrink-0"
-                        )}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <MapPin className="h-12 w-12 text-primary/30" />
-                        </div>
-                        <div className="absolute top-3 left-3">
-                          <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm">
-                            {tour.category}
-                          </Badge>
-                        </div>
-                        {tour.featured && (
-                          <div className="absolute top-3 right-3">
-                            <Badge className="bg-accent text-accent-foreground">Featured</Badge>
-                          </div>
-                        )}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <MapPin className="h-12 w-12 text-primary/30" />
                       </div>
-
-                      <div className="flex flex-col flex-1">
-                        <CardContent className="flex-1 pt-4">
-                          <h3 className="font-serif text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                            {tour.title}
-                          </h3>
-                          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                            {tour.description}
-                          </p>
-
-                          {/* Destinations */}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
-                            <MapPin className="h-4 w-4" />
-                            {tour.destinations.join(" • ")}
-                          </div>
-
-                          {/* Tour Info */}
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {tour.duration}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {tour.groupSize}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-accent text-accent" />
-                              <span className="font-medium text-foreground">{tour.rating}</span>
-                              <span>({tour.reviews})</span>
-                            </div>
-                          </div>
-                        </CardContent>
-
-                        <CardFooter className="border-t bg-secondary/30">
-                          <div className="flex items-center justify-between w-full">
-                            <div>
-                              <span className="text-muted-foreground text-sm">From</span>
-                              <div className="text-xl font-bold text-primary">${tour.price}</div>
-                            </div>
-                            <Button size="sm">
-                              View Details
-                              <ArrowRight className="h-4 w-4 ml-1" />
-                            </Button>
-                          </div>
-                        </CardFooter>
+                      <div className="absolute top-3 left-3">
+                        <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm">
+                          {tour.category}
+                        </Badge>
                       </div>
-                    </Card>
-                  </Link>
+                      {tour.featured && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-accent text-accent-foreground">Featured</Badge>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col flex-1">
+                      <CardContent className="flex-1 pt-4">
+                        <h3 className="font-serif text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                          {tour.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                          {tour.description}
+                        </p>
+
+                        {/* Destinations */}
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+                          <MapPin className="h-4 w-4" />
+                          {tour.destinations.join(" • ")}
+                        </div>
+
+                        {/* Tour Info */}
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {tour.duration}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            {tour.groupSize}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 fill-accent text-accent" />
+                            <span className="font-medium text-foreground">{tour.rating}</span>
+                            <span>({tour.reviews})</span>
+                          </div>
+                        </div>
+                      </CardContent>
+
+                      <CardFooter className="border-t bg-secondary/30">
+                        <div className="flex items-center justify-between w-full">
+                          <div>
+                            <span className="text-muted-foreground text-sm">From</span>
+                            <div className="text-xl font-bold text-primary">${tour.price}</div>
+                          </div>
+                          <Button size="sm">
+                            View Details
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </div>
+                  </Card>
                 ))}
               </div>
 
