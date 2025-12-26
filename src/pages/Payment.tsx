@@ -1,83 +1,63 @@
-// Payment Page - Dynamic route with tour ID parameter
-// Handles payment for specific tours with form validation
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { CreditCard, ArrowLeft, Lock, Clock, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { CreditCard, ArrowLeft, Lock, CheckCircle } from "lucide-react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getTourById, type Tour } from "@/data/tours";
 
 const Payment = () => {
-  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
-  const [tour, setTour] = useState<Tour | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const tourData = location.state as { title: string; price: number } | null;
 
   const [formData, setFormData] = useState({
     name: "",
     cardNumber: "",
   });
 
-  // Effect to find tour by ID from URL params
-  // Redirects to home if tour not found (no 404 shown)
-  useEffect(() => {
-    if (id) {
-      const tourId = parseInt(id, 10);
-      const foundTour = getTourById(tourId);
+  // Redirect if no tour data
+  if (!tourData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center">
+          <CardContent className="pt-8 pb-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <CreditCard className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h2 className="font-serif text-2xl font-bold mb-2">No Tour Selected</h2>
+            <p className="text-muted-foreground mb-6">
+              Please select a tour to proceed with payment.
+            </p>
+            <Link to="/">
+              <Button>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Browse Tours
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-      if (foundTour) {
-        setTour(foundTour);
-      } else {
-        // Invalid ID - redirect to home instead of showing 404
-        navigate("/", { replace: true });
-      }
-    } else {
-      // No ID provided - redirect to home
-      navigate("/", { replace: true });
-    }
-    setIsLoading(false);
-  }, [id, navigate]);
-
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (tour) {
-      alert(`Payment Successful for ${tour.title}`);
-      navigate("/");
-    }
+    alert("Payment Successful");
+    navigate("/");
   };
 
-  // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  // Tour not found - this should not render as we redirect, but just in case
-  if (!tour) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      {/* Header with Back Button */}
+      {/* Header */}
       <div className="bg-primary/5 border-b">
         <div className="container-custom py-4">
-          <Link
-            to="/"
-            className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors"
-          >
+          <Link to="/" className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tours
           </Link>
@@ -97,48 +77,37 @@ const Payment = () => {
           </div>
 
           <div className="grid gap-6">
-            {/* Tour Summary Card */}
+            {/* Order Summary */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  Tour Details
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  Order Summary
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Tour Title */}
+                <div className="flex justify-between items-center py-3 border-b">
                   <div>
-                    <h3 className="font-serif text-xl font-semibold">
-                      {tour.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {tour.description}
-                    </p>
+                    <h3 className="font-semibold">{tourData.title}</h3>
+                    <p className="text-sm text-muted-foreground">Tour Package</p>
                   </div>
-
-                  {/* Tour Info */}
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {tour.duration}
-                    </div>
-                    <span>•</span>
-                    <span>{tour.category}</span>
-                  </div>
-
-                  {/* Price */}
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <span className="font-semibold">Total Price</span>
+                  <div className="text-right">
                     <span className="text-2xl font-bold text-primary">
-                      ${tour.price}
+                      ${tourData.price}
                     </span>
+                    <p className="text-sm text-muted-foreground">per person</p>
                   </div>
+                </div>
+                <div className="flex justify-between items-center pt-3">
+                  <span className="font-semibold">Total</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${tourData.price}
+                  </span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Payment Form Card */}
+            {/* Payment Form */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -148,7 +117,6 @@ const Payment = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Cardholder Name Input */}
                   <div className="space-y-2">
                     <Label htmlFor="name">Cardholder Name</Label>
                     <Input
@@ -161,7 +129,6 @@ const Payment = () => {
                     />
                   </div>
 
-                  {/* Card Number Input */}
                   <div className="space-y-2">
                     <Label htmlFor="cardNumber">Card Number</Label>
                     <Input
@@ -174,29 +141,17 @@ const Payment = () => {
                     />
                   </div>
 
-                  {/* Security Notice */}
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg">
                     <Lock className="h-4 w-4" />
                     <span>Your payment information is secure and encrypted</span>
                   </div>
 
-                  {/* Pay Now Button */}
                   <Button type="submit" size="lg" className="w-full">
-                    Pay Now - ${tour.price}
+                    Pay Now - ${tourData.price}
                   </Button>
                 </form>
               </CardContent>
             </Card>
-
-            {/* Back to Tours Button */}
-            <div className="text-center">
-              <Link to="/">
-                <Button variant="outline" size="lg">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Tours
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
